@@ -26,7 +26,7 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
-                ->scalarNode('root_namespace')->defaultValue('App')->end()
+                ->scalarNode('root_namespace')->defaultValue('Jm\\Bundle\\MarketplaceBundle\\')->end()
             ->end()
         ;
 

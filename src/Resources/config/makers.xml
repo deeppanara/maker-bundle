@@ -25,6 +25,14 @@
                 <tag name="maker.command" />
             </service>
 
+            <service id="maker.maker.make_abstract_entity" class="Symfony\Bundle\MakerBundle\Maker\MakeAbstractEntity">
+                <argument type="service" id="maker.file_manager" />
+                <argument type="service" id="maker.doctrine_helper" />
+                <argument>%kernel.project_dir%</argument>
+                <argument type="service" id="maker.generator" />
+                <tag name="maker.command" />
+            </service>
+
             <service id="maker.maker.make_entity" class="Symfony\Bundle\MakerBundle\Maker\MakeEntity">
                 <argument type="service" id="maker.file_manager" />
                 <argument type="service" id="maker.doctrine_helper" />
