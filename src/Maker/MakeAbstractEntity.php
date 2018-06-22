@@ -168,6 +168,12 @@ final class MakeAbstractEntity extends AbstractMaker implements MakerInterface
             'Repository'
         );
 
+        $repositoryInterfaceDetails = $generator->createClassNameDetails(
+            $input->getArgument('name'),
+            'Repository\\',
+            'RepositoryInterface'
+        );
+
         $classExists = class_exists($entityClassDetails->getFullName());
         if (!$classExists) {
             $entityPath = $generator->generateClass(
@@ -177,10 +183,11 @@ final class MakeAbstractEntity extends AbstractMaker implements MakerInterface
                     'repository_full_class_name' => $repositoryClassDetails->getFullName(),
                     'api_resource' => $input->getOption('api-resource'),
                     'table_name' => $this->taplePrefix.'_'.Str::asSnakeCase($input->getArgument('name')),
-                    'is_translatable' => $this->taplePrefix.'_'.Str::asSnakeCase($input->getArgument('name')),
+                    'is_translatable' => $input->getOption('translation')
 
                 ]
             );
+       
 
             $entityAlias = strtolower($entityClassDetails->getShortName()[0]);
             $generator->generateClass(
@@ -193,9 +200,15 @@ final class MakeAbstractEntity extends AbstractMaker implements MakerInterface
                 ]
             );
 
+            $generator->generateClass(
+                $repositoryInterfaceDetails->getFullName(),
+                'doctrine/RepositoryInterface.tpl.php',
+                [
+                    'interface_name' => $repositoryInterfaceDetails->getShortName(),
+                ]
+            );
 
         }
-
 
         if ($input->getOption('translation')) {
             $transentityClassDetails = $generator->createClassNameDetails(

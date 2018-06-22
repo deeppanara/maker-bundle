@@ -153,6 +153,11 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
             'Entity\\'
         );
 
+        $superentityClassDetails = $generator->createClassNameDetails(
+            'Super'.ucwords($input->getArgument('name')),
+            'Entity\\'
+        );
+
         $repositoryClassDetails = $generator->createClassNameDetails(
             $entityClassDetails->getRelativeName(),
             'Repository\\',
@@ -180,7 +185,19 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
                     'entity_alias' => $entityAlias,
                 ]
             );
+            $generator->writeChanges();
+        }
 
+        $superclassExists = class_exists($superentityClassDetails->getFullName());
+        if (!$superclassExists) {
+            $entityPath = $generator->generateClass(
+                $superentityClassDetails->getFullName(),
+                'doctrine/Entity.tpl.php',
+                [
+                    'repository_full_class_name' => $repositoryClassDetails->getFullName(),
+                    'api_resource' => $input->getOption('api-resource'),
+                ]
+            );
             $generator->writeChanges();
         }
 
