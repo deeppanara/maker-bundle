@@ -142,6 +142,7 @@ final class MakeAbstractEntity extends AbstractMaker implements MakerInterface
     }
 
     public function generate(InputInterface $input, ConsoleStyle $io, Generator $generator)
+
     {
         if (\PHP_VERSION_ID < 70100) {
             throw new RuntimeCommandException('The make:entity command requires that you use PHP 7.1 or higher.');
@@ -174,6 +175,28 @@ final class MakeAbstractEntity extends AbstractMaker implements MakerInterface
             'RepositoryInterface'
         );
 
+        $entityInterfaceDetails = $generator->createClassNameDetails(
+            $input->getArgument('name'),
+            'Model\\',
+            'Interface'
+        );
+
+        $abstractEntityClassDetails = $generator->createClassNameDetails(
+            'Abstract '.$input->getArgument('name'),
+            'Entity\\'
+        );
+
+        $entityTranslationClassDetails = $generator->createClassNameDetails(
+            $input->getArgument('name'),
+            'Entity\\',
+            'Translation'
+        );
+//        $abstractEntityTranslationClassDetails = $generator->createClassNameDetails(
+//            'Abstract '.$input->getArgument('name'),
+//            'Entity\\',
+//            'Translation'
+//        );
+
         $classExists = class_exists($entityClassDetails->getFullName());
         if (!$classExists) {
             $entityPath = $generator->generateClass(
@@ -183,11 +206,23 @@ final class MakeAbstractEntity extends AbstractMaker implements MakerInterface
                     'repository_full_class_name' => $repositoryClassDetails->getFullName(),
                     'api_resource' => $input->getOption('api-resource'),
                     'table_name' => $this->taplePrefix.'_'.Str::asSnakeCase($input->getArgument('name')),
-                    'is_translatable' => $input->getOption('translation')
+                    'is_translatable' => $input->getOption('translation'),
+                    'entity_intreface_name' => $entityInterfaceDetails->getShortName(),
+                    'entity_intreface_path' => $entityInterfaceDetails->getFullName(),
+                    'abstract_entity_name' => $abstractEntityClassDetails->getShortName(),
+                    'abstract_entity_path' => $abstractEntityClassDetails->getFullName(),
 
                 ]
             );
-       
+
+            $generator->generateClass(
+                $abstractEntityClassDetails->getFullName(),
+                'doctrine/AbstractEntity.tpl.php',
+                [
+                    'api_resource' => $input->getOption('api-resource'),
+                    'is_translatable' => $input->getOption('translation')
+                ]
+            );
 
             $entityAlias = strtolower($entityClassDetails->getShortName()[0]);
             $generator->generateClass(
@@ -208,24 +243,38 @@ final class MakeAbstractEntity extends AbstractMaker implements MakerInterface
                 ]
             );
 
+            $generator->generateClass(
+                $entityInterfaceDetails->getFullName(),
+                'doctrine/EntityInterface.tpl.php',
+                [
+                    'interface_name' => $entityInterfaceDetails->getShortName(),
+                ]
+            );
+
         }
 
         if ($input->getOption('translation')) {
-            $transentityClassDetails = $generator->createClassNameDetails(
-                $input->getArgument('name').' translation',
-                'Entity\\Translation'
-            );
 
-            $classExists = class_exists($transentityClassDetails->getFullName());
+            $classExists = class_exists($entityTranslationClassDetails->getFullName());
             if (!$classExists) {
-                $entityPath = $generator->generateClass(
-                    $transentityClassDetails->getFullName(),
+                $generator->generateClass(
+                    $entityTranslationClassDetails->getFullName(),
                     'doctrine/EntityTranslatable.tpl.php',
                     [
                         'api_resource' => $input->getOption('api-resource'),
-                        'table_name' => $this->taplePrefix.'_'.Str::asSnakeCase($input->getArgument('name').' translation'),
+                        'table_name' => $this->taplePrefix.'_'.Str::asSnakeCase( $entityTranslationClassDetails->getShortName()),
+//                        'abstract_entity_name' => $abstractEntityTranslationClassDetails->getShortName(),
+//                        'abstract_entity_path' => $abstractEntityTranslationClassDetails->getFullName(),
                     ]
                 );
+
+//                $generator->generateClass(
+//                    $abstractEntityTranslationClassDetails->getFullName(),
+//                    'doctrine/AbstractEntityTranslatable.tpl.php',
+//                    [
+//
+//                    ]
+//                );
             }
         }
 
@@ -255,7 +304,6 @@ final class MakeAbstractEntity extends AbstractMaker implements MakerInterface
             '',
         ]);
     }
-
     public function configureDependencies(DependencyBuilder $dependencies, InputInterface $input = null)
     {
         if (null !== $input && $input->getOption('api-resource')) {

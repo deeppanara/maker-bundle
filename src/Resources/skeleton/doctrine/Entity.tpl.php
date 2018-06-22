@@ -2,19 +2,22 @@
 
 namespace <?= $namespace ?>;
 
-<?php if ($api_resource): ?>use ApiPlatform\Core\Annotation\ApiResource;
-<?php endif ?>
 use Doctrine\ORM\Mapping as ORM;
 use Knp\DoctrineBehaviors\Model as ORMBehaviors;
+use <?= $entity_intreface_path ?>;
+use <?= $abstract_entity_path ?>;
+<?php if ($api_resource): ?>use ApiPlatform\Core\Annotation\ApiResource;
+<?php endif ?>
 
 /**
 <?php if ($api_resource): ?> * @ApiResource()
 <?php endif ?>
- * @ORM\Entity(repositoryClass="<?= $repository_full_class_name ?>")
+ * @ORM\Entity()
  * @ORM\HasLifecycleCallbacks
  * @ORM\Table(name="<?= $table_name ?>")
  */
-class <?= $class_name."\n" ?>
+class <?= $class_name ?> extends <?= $abstract_entity_name ?> implements <?= $entity_intreface_name ?>
+
 {
 <?php if ($is_translatable): ?>
     use ORMBehaviors\Translatable\Translatable;
